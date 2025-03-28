@@ -1,7 +1,9 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 import yt_dlp
 
 app = Flask(__name__)
+CORS(app) 
 
 @app.route("/get_video", methods=["GET"])
 def get_video():
