@@ -1,29 +1,46 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import yt_dlp
+import requests
 
 app = Flask(__name__)
-CORS(app) 
+CORS(app)  # Cho phép extension truy cập API
+
+# Hàm tải video Facebook
+def get_facebook_video(fb_url):
+    response = requests.get(f"https://facebook-reels-downloader.onrender.com/get_video?url={fb_url}")
+    return response.json().get("video_url", "")
+
+# Hàm tải video TikTok
+def get_tiktok_video(tt_url):
+    response = requests.get(f"https://www.tikwm.com/api/?url={tt_url}")
+    data = response.json()
+    return data.get("data", {}).get("play", "")
+
+# Hàm tải video Instagram
+def get_instagram_video(ig_url):
+    response = requests.get(f"https://saveig.app/api?url={ig_url}")
+    data = response.json()
+    return data.get("url", "")
 
 @app.route("/get_video", methods=["GET"])
 def get_video():
-    video_url = request.args.get("url")
-    if not video_url:
-        return jsonify({"error": "Thiếu URL video!"}), 400
+    url = request.args.get("url")
+    platform = request.args.get("platform")
 
-    ydl_opts = {
-        "quiet": True,
-        "format": "best",
-        "noplaylist": True
-    }
+    if not url or not platform:
+        return jsonify({"error": "URL and platform are required"}), 400
 
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(video_url, download=False)
-            video_link = info["url"]
-        return jsonify({"video_url": video_link})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    video_url = ""
+    if platform == "facebook":
+        video_url = get_facebook_video(url)
+    elif platform == "tiktok":
+        video_url = get_tiktok_video(url)
+    elif platform == "instagram":
+        video_url = get_instagram_video(url)
+
+    if video_url:
+        return jsonify({"video_url": video_url})
+    return jsonify({"error": "Failed to fetch video"}), 400
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(debug=True, port=5000)
