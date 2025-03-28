@@ -37,7 +37,7 @@ def get_video():
     video_link = ""
 
     try:
-        if platform == "facebook" or platform == "youtube":
+        if platform == "facebook" or platform == "youtube" or platform == "instagram":  
             ydl_opts = {"quiet": True, "format": "best", "noplaylist": True}
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(video_url, download=False)
@@ -46,8 +46,8 @@ def get_video():
         elif platform == "tiktok":
             video_link = get_tiktok_video(video_url)
 
-        elif platform == "instagram":
-            video_link = get_instagram_video(video_url)
+        # elif platform == "instagram":
+        #     video_link = get_instagram_video(video_url)
 
         if video_link:
             return jsonify({"video_url": video_link})
